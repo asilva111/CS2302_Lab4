@@ -1,3 +1,12 @@
+'''
+Created on Wed Mar 15 20:55:43 2019
+CS 2302 - Andres Silva
+> Teacher: Olac Fuentes
+> TAs: Anindita Nath  & Maliheh Zargaran
+> Lab #4
+> The purpose of this lab is to work with B-trees and understand their structure.
+> LAST MODIFIED: MARCH 8th, 2019
+'''
 # Code to implement a B-tree 
 # Programmed by Olac Fuentes
 # Last modified February 28, 2019
@@ -135,24 +144,75 @@ def Max(T,d):
         return Max(T.child[-1],d-1)
 
        
-def Extract(T): #Extract into a sorted list.
+  
+    
+def MaxedNodes(T): 
+    c = 0 # Counter of Nodes whose length is equal to the max ammount of elements allowed.
+    
+    if T is None: #If T is None, return.
+        return
+    
+    if not T.isLeaf and len(T.item) == T.max_items: #Increase counter by one if condition is true.
+        c += 1
+    
+    for i in range(0,len(T.child)): #Traverse entire tree
+        c += MaxedNodes(T.child[i])
+
+    return c #Return count.
+
+    
+def MaxedLeaves(T): #Do the same as above, but only increase counter when the node is a leaf
+    c = 0 # Counter of leaves whose length is equal to the max ammount of elements allowed.
+    
+    if T is None: #If T is None, return.
+        return
+    
+    if T.isLeaf and len(T.item) == T.max_items: #Increase counter by one if condition is true.
+        c += 1
+    
+    for i in range(0,len(T.child)): #Traverse entire tree
+        c += MaxedLeaves(T.child[i])
+
+    return c #Return count.
+
+def Extract(T):  #####NOT FINISHED####
     
     if (len(T.item) < 1 or T.child[0] == None):
         return []
     else:     
-        print(T.child[0].item)
+#        print(T.child[0].item)
         List = Extract(T.child[0]) + T.item  #Concatenate the left child, the current node, and the right child.
         return List #return glued list.
     
-def NodesAtD(T,d):
+def NodesAtD(T,d): #####NOT FINISHED####
     if T is None:
         return 
     if d == 0:
         return len(T.item)
     elif d > 0:
-        return NodesAtD(T.child[0],d-1)  + NodesAtD(T.child[-1],d-1)     
+        return NodesAtD(T.child[0],d-1)  + NodesAtD(T.child[-1],d-1)   
     
-
+def PrintAtD(T,d): #####NOT FINISHED####
+    if T is None:
+        return 
+    if d == 0:
+        return print(T.item)
+    elif d > 0:
+        return NodesAtD(T.child[0],d-1)  + NodesAtD(T.child[-1],d-1) 
+    
+def DepthOfK(T,k):  #####NOT FINISHED####
+    if T is None:
+        return -1
+    else:
+        for i in range(0,len(T.item)): #Compare k to every element of current node.
+            if k == T.item[i]:
+                return 1
+    
+    if k > T.item[len(T.item)//2]:
+        return 1 + DepthOfK(T.child[-1],k)
+    else:
+        return 1 + DepthOfK(T.child[0],k)
+    
 #T = BTree()    
 #for i in range(13):
 #    Insert(T,random.randint(0,100)) 
@@ -180,8 +240,11 @@ PrintD(T,' ')
 
 #print(Min(T,1))
 #print(Max(T,1))
-print(Extract(T))
+#print(Extract(T))
 #print(NodesAtD(T,2))
+#print(MaxedNodes(T))
+#print(MaxedLeaves(T))
+print(DepthOfK(T,1))
 
 
 
@@ -194,7 +257,15 @@ print(Extract(T))
 
 
 
-
+#def MaxedLeaves(T):
+#    c = 0
+#   
+#    if T.isLeaf and T.item == T.max_items:
+#        c += 1
+#    
+#     elif not T.isLeaf:
+#        for i in range(0,len(T.child)):
+#           return MaxedLeaves(T.child[i])
 
 
 
