@@ -5,13 +5,15 @@ CS 2302 - Andres Silva
 > TAs: Anindita Nath  & Maliheh Zargaran
 > Lab #4
 > The purpose of this lab is to work with B-trees and understand their structure.
-> LAST MODIFIED: MARCH 8th, 2019
+> LAST MODIFIED: MARCH 27th, 2019
 '''
 # Code to implement a B-tree 
 # Programmed by Olac Fuentes
 # Last modified February 28, 2019
 import math
 import random
+import time
+
 class BTree(object):
     # Constructor
     def __init__(self,item=[],child=[],isLeaf=True,max_items=5):  
@@ -121,13 +123,13 @@ def SearchAndPrint(T,k):
         print('node contents:',node.item)
  
     
-def GetHeight(T):
-    if T.isLeaf:
+def GetHeight(T): #It is a property of B-trees that all children are at the same leve.
+    if T.isLeaf:#If at bottom, return 0 
         return 0
     else:
-        return 1 + GetHeight(T.child[0])
+        return 1 + GetHeight(T.child[0]) #Return height + each level.
     
-def Min(T,d):
+def Min(T,d): #Look for the leftmost element.
     if d == 0:
         return T.item[0]
     if T == None:
@@ -135,7 +137,7 @@ def Min(T,d):
     else:
         return Min(T.child[0],d-1)
 
-def Max(T,d):
+def Max(T,d): #Look for the rightmost element.
     if d == 0:
         return T.item[-1]
     if T == None:
@@ -175,278 +177,132 @@ def MaxedLeaves(T): #Do the same as above, but only increase counter when the no
 
     return c #Return count.
 
-def Extract(T):  #####NOT FINISHED####
-    
-    if (len(T.item) < 1 or T.child[0] == None):
-        return []
+def Extract(T):  
+    List = [] #Create a list to be returned.
+    if (T.isLeaf): #If there is no next child to exctract, return itself.
+        return T.item
     else:     
-#        print(T.child[0].item)
-        List = Extract(T.child[0]) + T.item  #Concatenate the left child, the current node, and the right child.
-        return List #return glued list.
+        for i in range(len(T.item)): 
+            List += Extract(T.child[i]) + [T.item[i]] #Extract the of current node + all elements of item array
+        List += Extract(T.child[-1]) #Return the very last element (which was not extracted previously)
+    return List #return list.
     
-def NodesAtD(T,d): #####NOT FINISHED####
-    if T is None:
-        return 
-    if d == 0:
-        return len(T.item)
-    elif d > 0:
-        return NodesAtD(T.child[0],d-1)  + NodesAtD(T.child[-1],d-1)   
+def NodesAtD(T,d): 
     
-def PrintAtD(T,d): #####NOT FINISHED####
-    if T is None:
-        return 
-    if d == 0:
-        return print(T.item)
-    elif d > 0:
-        return NodesAtD(T.child[0],d-1)  + NodesAtD(T.child[-1],d-1) 
+    if d == 0: #If at desired level return 1
+        return 1
     
-def DepthOfK(T,k):  #####NOT FINISHED####
-    if T is None:
+    if T.isLeaf: #If there is no more nodes to look into, return 0.
+        return 0
+    
+    else:
+        num = 0
+        for i in range(len(T.child)):#Count all Nodes of the child array.
+           num += NodesAtD(T.child[i],d-1)
+          
+        return num #Return the count.
+
+
+def PrintAtD(T,d):
+    if d == 0: #If at desired level, print current node.
+        print(T.item, ' ')
+        return #Return statement to stop.
+    
+    if T.isLeaf:#If there is nothing else to print, return
+        return
+    
+    else:
+        for i in range(len(T.child)): #Repeat for all existing children.
+           PrintAtD(T.child[i],d-1)
+          
+
+    
+def DepthOfK(T,k): #Needs fix. 
+   
+    if k in T.item:
+        return 0
+    
+    if T.isLeaf:
         return -1
-    else:
-        for i in range(0,len(T.item)): #Compare k to every element of current node.
-            if k == T.item[i]:
-                return 1
     
-    if k > T.item[len(T.item)//2]:
-        return 1 + DepthOfK(T.child[-1],k)
-    else:
-        return 1 + DepthOfK(T.child[0],k)
+    if k > T.item[-1]:
+        d = DepthOfK(T.child[-1],k)
     
-#T = BTree()    
-#for i in range(13):
-#    Insert(T,random.randint(0,100)) 
-#PrintD(T,'') 
-##print(GetHeight(T))
-#print(Extract(T))
+    else:
+        for i in range(len(T.item)):
+            if k < T.item[i]:
+                d = DepthOfK(T.child[i],k)
+            
+    if d == -1:
+        return -1
+    
+    return d + 1
+
+
 
           
 
-#L = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,25,25]
+
 #L = [17,8,12,28,34,4,7,9,11,13,15,16,24,27,30,33,37,40,42,50]
-
 T = BTree()    
-#for i in L:
-#    Insert(T,i)
-    
-
 for i in range(0,33):
-    Insert(T,random.randint(0,1000))
+    Insert(T,random.randint(0,100))
+ 
 
 PrintD(T,' ')
 
-
-#print(GetHeight(T))
-
-#print(Min(T,1))
-#print(Max(T,1))
-#print(Extract(T))
-#print(NodesAtD(T,2))
-#print(MaxedNodes(T))
-#print(MaxedLeaves(T))
-print(DepthOfK(T,1))
-
-
-
-
-
-
-
-
-
-
-
-
-#def MaxedLeaves(T):
-#    c = 0
-#   
-#    if T.isLeaf and T.item == T.max_items:
-#        c += 1
-#    
-#     elif not T.isLeaf:
-#        for i in range(0,len(T.child)):
-#           return MaxedLeaves(T.child[i])
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#def LargestAtDepthD(T,d): # Returns largest item at depth d in b-tree with root T,
-## or -infinity if the tree has no items with depth d
-#    if d==0:
-#        return T.item[-1]
-#    if T.isLeaf:
-#        return -math.inf
-#    else:
-#        LargestAtDepthD(T.child[-1], d-1)
-    
-#def FullNodes(T): # Returns number of nodes in b-tree with root T that are full
-#    count = 0
-#    if not T.isLeaf:
-#        for c in T.child:
-#            count += FullNodes(c)
-#    if len(T.item) == T.max_items:
-#        count += 1
-#    return count
-        
-#def FullNodes(T): # Returns number of nodes in b-tree with root T that are full
-#    if T.isLeaf:
-#        return 0
-#    if len(T.item) == T.max_items:
-#        return 1
-#    if len(T.item) == T.max_items:
-#        return 1 + FullNodes(T.child[len(T.item)])
-
-#def FullNodes(T):
-#    if T.isLeaf:
-#        return 0
-#    if len(T.item) == T.max_items:
-#        return 1 + FullNodes(T.child[len(T.item)])
-    
-#def NumItems(T): # Returns number of items in b-tree with root T
-#    if T.isLeaf:
-#        return len(T.item)
-#    return NumItems(T.child[-1]) + NumItems(T.child[0]) + NumItems(T.child[1])
-    
-#def NumItems(T): # Returns number of items in b-tree with root T
-#    s = 0
-#    if T.isLeaf:
-#        return (len(T.item))
-#    else:
-#        s += len(T.item)
-#        for i in range(len(T.child)):
-#            NumItems(T.child[i])
-#        return s
-
-#def NumItems(T): # Returns number of items in b-tree with root T
-#    s = 0
-#    if T.isLeaf:
-#        return (len(T.item))
-#    else:
-#        for i in range(len(T.child)):
-#            s+= NumItems(T.child[i])
-#        return s
+start = time.time()
+print("\n\nGetHeight")
+print(GetHeight(T))
+end = time.time()
+print("GetHeight: ", end - start)
+
+print("\n\nMin")
+start = time.time()
+print(Min(T,2))
+end = time.time()
+print("Min: ", end - start)
+
+print("\n\nMax")
+start = time.time()
+print(Max(T,2))
+end = time.time()
+print("Max: ", end - start)
+
+print("\n\nExtract")
+start = time.time()
+print(Extract(T))
+end = time.time()
+print("Extract: ", end - start)
+
+print("\n\nNodes At")
+start = time.time()
+print(NodesAtD(T,2))
+end = time.time()
+print("NodesAtD: ", end - start)
+
+print("\n\nMaxed Nodes")
+start = time.time()
+print(MaxedNodes(T))
+end = time.time()
+print("MaxedNodes: ", end - start)
+
+print("\n\nMaxedLeaves")
+start = time.time()
+print(MaxedLeaves(T))
+end = time.time()
+print("MaxedLeaves: ", end - start)
+
+print("\n\nDepthOfK")
+start = time.time()
+print(DepthOfK(T,5))
+end = time.time()
+print("DepthOfK: ", end - start)
+
+print("\n\nPrintAtD")
+start = time.time()
+PrintAtD(T,2)
+end = time.time()
+print("PrintAtD ", end - start)
 #
-#def FindDepth(T,k): # Returns th depth of item k in b-tree with root T, or -1 if
-## k is not in the tree
-#    if k in T.item:
-#        return 0
-#    if T.isLeaf:
-#        return -1
-#    depth = 0
-#    for i in range(len(T.child)):
-#        depth+=1
-#        return depth + FindDepth(T.child[i], k)
-        
-#def FindDepth(T, k): # Returns th depth of item k in b-tree with root T, or -1 if
-## k is not in the tree
-#    if k in T.item:
-#        return 0
-#    if T.isLeaf:
-#        return -1
-#    if k>T.item[-1]:
-#        FindDepth(T.child[-1],k)
-#    else:
-#        for i in range(len(T.item)):
-#            if k < T.item[i]:
-#                FindDepth(T.child[i],k)
-        
-#def FindDepth(T, k): # Returns th depth of item k in b-tree with root T, or -1 if
-## k is not in the tree
-#    if k in T.item:
-#        return 0
-#    if T.isLeaf:
-#        return -1
-#    if k>T.item[-1]:
-#        d = FindDepth(T.child[-1],k)
-#    else:
-#        for i in range(len(T.item)):
-#            if k < T.item[i]:
-#                d = FindDepth(T.child[i],k)
-#    return d + 1
-        
-#def FindDepth(T, k): # Returns the depth of item k in b-tree with root T, or -1 if
-## k is not in the tree
-#    if k in T.item:
-#        return 0
-#    if T.isLeaf:
-#        return -1
-#    if k>T.item[-1]:
-#        d = FindDepth(T.child[-1],k)
-#    else:
-#        for i in range(len(T.item)):
-#            if k < T.item[i]:
-#                d = FindDepth(T.child[i],k)
-#    if d == -1:
-#        return -1
-#    return d + 1
-        
-#def PrintAtDepthD(T,d): # Prints all items in b-tree with root T that have depth d
-#    if d ==0:
-#        for t in T.item:
-#            print(t,end=' ')
-#    if not T.isLeaf:
-#        for i in range(len(T.child)):
-#            PrintAtDepthD(T.child[i],d-1)
-##
-##L = [25,30,31,35]
-#L = [17,8,12,28,34,4,7,9,11,13,15,16,24,27,30,33,37,40,42,50]
-#T = BTree()    
-#for i in L:
-#    Insert(T,i)
-    
-    #Print(T)
+
